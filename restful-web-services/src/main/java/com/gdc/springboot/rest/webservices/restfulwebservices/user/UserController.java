@@ -2,6 +2,10 @@ package com.gdc.springboot.rest.webservices.restfulwebservices.user;
 
 import com.gdc.springboot.rest.webservices.restfulwebservices.exception.UserNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.hateoas.Resource;
+import static org.springframework.hateoas.mvc.ControllerLinkBuilder.*;
+
+import org.springframework.hateoas.mvc.ControllerLinkBuilder;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
@@ -22,12 +26,15 @@ public class UserController {
     }
 
     @GetMapping("/users/{id}")
-    public User retrieveUserById(@PathVariable int id){
+    public Resource<User> retrieveUserById(@PathVariable int id){
         User user = userDaoService.findOne(id);
         if(user==null){
             throw new UserNotFoundException("id-" + id);
         }
-        return user;
+        Resource<User> resource = new Resource<User>(user);
+        ControllerLinkBuilder linkTo = linkTo(methodOn(this.getClass()).retrieveAllUsers());
+        resource.add(linkTo.withRel("all-users"));
+        return resource;
     }
 
     @PostMapping("/users")
